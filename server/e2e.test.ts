@@ -2,7 +2,7 @@
 // and checks the create/join multiplayer flow.
 import WebSocket from 'ws';
 
-const URL = 'ws://localhost:5173/ws';
+const URL = process.env.E2E_URL || 'ws://localhost:5173/ws';
 
 function connect(): Promise<WebSocket> {
   return new Promise((res, rej) => {
