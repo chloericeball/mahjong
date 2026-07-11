@@ -1,0 +1,40 @@
+{
+  "name": "mahjong",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:client": "vite",
+    "build": "vite build",
+    "test": "tsx shared/engine.test.ts",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "tsx server/e2e.test.ts",
+    "start": "tsx server/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "ws": "^8.21.0",
+    "tsx": "^4.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^6.0.3",
+    "concurrently": "^10.0.3",
+    "puppeteer-core": "^25.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.4"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}
