@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Table } from './Table';
-import { Guide } from './Guide';
+import { Learn, loadProgress } from './Learn';
+import { Puzzles, puzzleBest } from './Puzzles';
+import { LESSONS } from './lessons';
 
 export interface PlayerView {
   name: string;
@@ -51,7 +53,7 @@ export default function App() {
   const [name, setName] = useState(() => localStorage.getItem('mj-name') || '');
   const [joinCode, setJoinCode] = useState('');
   const [connected, setConnected] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
+  const [screen, setScreen] = useState<'home' | 'learn' | 'puzzles'>('home');
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -79,10 +81,15 @@ export default function App() {
   };
 
   if (!view) {
+    if (screen === 'learn') return <Learn onClose={() => setScreen('home')} />;
+    if (screen === 'puzzles') return <Puzzles onClose={() => setScreen('home')} />;
+
+    const lessonsDone = loadProgress().size;
+    const best = puzzleBest();
     return (
-      <div className="lobby">
+      <div className="lobby home">
         <h1>麻雀 Mahjong</h1>
-        <p className="subtitle">Hong Kong rules · play online with friends or vs AI</p>
+        <p className="subtitle">Hong Kong rules · play, solve puzzles, learn interactively</p>
         {!connected && <p className="error">Connecting to server…</p>}
         {error && <p className="error">{error}</p>}
         <input
@@ -91,32 +98,47 @@ export default function App() {
           maxLength={16}
           onChange={(e) => setName(e.target.value)}
         />
-        <div className="lobby-actions">
-          <button className="primary" disabled={!connected}
-            onClick={() => sendMsg({ type: 'create', name: saveName(), solo: true })}>
-            Play vs AI
-          </button>
-          <button disabled={!connected}
-            onClick={() => sendMsg({ type: 'create', name: saveName() })}>
-            Create Room
-          </button>
+
+        <div className="nav-card play-card">
+          <div className="nav-card-head"><span className="nav-icon">🀄</span>
+            <span><b>Play</b><small>vs AI instantly, or online with friends</small></span>
+          </div>
+          <div className="lobby-actions">
+            <button className="primary" disabled={!connected}
+              onClick={() => sendMsg({ type: 'create', name: saveName(), solo: true })}>
+              Play vs AI
+            </button>
+            <button disabled={!connected}
+              onClick={() => sendMsg({ type: 'create', name: saveName() })}>
+              Create Room
+            </button>
+          </div>
+          <div className="join-row">
+            <input
+              placeholder="Room code"
+              value={joinCode}
+              maxLength={4}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            />
+            <button disabled={!connected || joinCode.length !== 4}
+              onClick={() => sendMsg({ type: 'join', code: joinCode, name: saveName() })}>
+              Join
+            </button>
+          </div>
         </div>
-        <div className="join-row">
-          <input
-            placeholder="Room code"
-            value={joinCode}
-            maxLength={4}
-            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-          />
-          <button disabled={!connected || joinCode.length !== 4}
-            onClick={() => sendMsg({ type: 'join', code: joinCode, name: saveName() })}>
-            Join
-          </button>
-        </div>
-        <button className="link-btn" onClick={() => setShowGuide(true)}>
-          🀄 New to mahjong? Learn how to play
+
+        <button className="nav-card" onClick={() => setScreen('puzzles')}>
+          <div className="nav-card-head"><span className="nav-icon">🧩</span>
+            <span><b>Puzzles</b><small>find the best discard · best streak: {best} 🔥</small></span>
+          </div>
         </button>
-        {showGuide && <Guide onClose={() => setShowGuide(false)} />}
+
+        <button className="nav-card" onClick={() => setScreen('learn')}>
+          <div className="nav-card-head"><span className="nav-icon">🎓</span>
+            <span><b>Learn</b><small>interactive lessons · {lessonsDone}/{LESSONS.length} complete</small></span>
+          </div>
+          <div className="nav-progress"><div style={{ width: `${(lessonsDone / LESSONS.length) * 100}%` }} /></div>
+        </button>
       </div>
     );
   }
